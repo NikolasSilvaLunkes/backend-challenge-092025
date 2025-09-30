@@ -10,4 +10,4 @@ Desafios encontrados:
 ###### - user_ids com exatos 13 caracteres seguem lógica diferente
 ###### - padrões específicos (ex: terminados em "_prime") têm regras especiais
 - O calculo de influência demorou mais tempo que o esperado para fazer
-- A detecção de anomalias foi complicada de ser feita
+- A detecção de anomalias foi complicada de ser feita 

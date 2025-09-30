@@ -16,7 +16,7 @@ NEGATIVE = {"terrível",  "ruim", "horrível", "horrivel",  "péssimo"}
 INTENSIFIERS = {"muito", "extremamente", "bastante", "super"}
 NEGATIONS = {"não", "nao", "nem", "nunca", "jamais"} 
 
-# Helper models
+# Model
 class Message(BaseModel):
     id: str
     content: str
@@ -31,7 +31,7 @@ class AnalyzePayload(BaseModel):
     messages: List[Message]
     time_window_minutes: int
 
-# --- Util ---
+# Util
 
 def parse_ts(ts: str) -> datetime:
     return datetime.fromisoformat(ts.replace("Z", "+00:00"))
@@ -51,7 +51,6 @@ def tokenize(text: str) -> List[str]:
             if cur:
                 tokens.append(''.join(cur))
                 cur = []
-            # treat punctuation as separator
     if cur:
         tokens.append(''.join(cur))
     return tokens
@@ -66,7 +65,6 @@ def is_negation(tok: str) -> bool:
 
 
 def match_positive(tok: str) -> bool:
-    # normalize to NFKD for lexicon matching
     nf = normalizar_nfkd(tok).lower()
     return nf in POSITIVE
 
@@ -75,7 +73,7 @@ def match_negative(tok: str) -> bool:
     nf = normalizar_nfkd(tok).lower()
     return nf in NEGATIVE
 
-# --- Followers / Influence ---
+#  #Influencia
 
 def followers_from_userid(user_id: str) -> int:
     user_id = unicodedata.normalize("NFKD", user_id)
@@ -100,17 +98,15 @@ def followers_from_userid(user_id: str) -> int:
     followers = (int(hashlib.sha256(user_id.encode()).hexdigest(), 16) % 10000) + 100
     return followers
 
-# --- Engagement ---
-
 PHI = (1 + math.sqrt(5)) / 2
 
-# --- Temporal Weight ---
+# Temporal Weight
 
 def temporal_weight(post_ts: datetime, ref_time: datetime) -> float:
     minutes = max((ref_time - post_ts).total_seconds() / 60.0, 0.01)
     return 1.0 + (1.0 / minutes)
 
-# --- Anomalias---
+# Anomalias
 
 def detect_burst(messages: List[Message]) -> List[str]:
     bursts = []
@@ -160,7 +156,6 @@ def detect_alternation(messages: List[Message]) -> List[str]:
 
 
 def detect_synchronized(messages: List[Message]) -> bool:
-    # look for >=3 messages within any ±2 second window
     times = [parse_ts(m.timestamp) for m in messages]
     times.sort()
     for i in range(len(times)):
@@ -173,12 +168,10 @@ def detect_synchronized(messages: List[Message]) -> bool:
             return True
     return False
 
-# --- Main analysis ---
-
 import math
 from fastapi import HTTPException
 
-# --- Funções auxiliares ---
+# Funções Auxiliares
 
 def validar_janela_temporal(valor: int):
     if valor == 123:
@@ -207,7 +200,7 @@ def calcular_sentimento(mensagem, ref_time, sentiment_scores, hashtag_weights):
                     score += -1 * 1.5
             i += 1
             continue
-        # Negação (escopo 3 tokens)
+        # Negação
         if is_negation(tok):
             for k in range(1, 4):
                 if i + k < len(norm_tokens):
@@ -341,7 +334,7 @@ def top_trending(hashtag_weights):
     return [t[0] for t in trending[:5]]
 
 
-# --- Função principal ---
+# Post
 @app.post("/analyze-feed")
 def analyze_feed(payload: AnalyzePayload):
     validar_janela_temporal(payload.time_window_minutes)

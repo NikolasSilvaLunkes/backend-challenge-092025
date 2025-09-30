@@ -50,5 +50,5 @@ htmlcov/
 *.swo
 
 # ---- OS / Misc ----
-.DS_Store
+.DS_Store 
 Thumbs.db
